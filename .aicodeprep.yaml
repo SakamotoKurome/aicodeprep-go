@@ -1,0 +1,11 @@
+files:
+  - "internal/**/*.go"
+exclude:
+  - "**/*_test.go"
+prompt: |
+  请分析以下 Go 代码文件，重点关注：
+  1. 代码结构和设计模式
+  2. 错误处理方式
+  3. 可能的改进建议
+max_file_size: 1048576  # 1MB
+output: ""  # 使用剪贴板
