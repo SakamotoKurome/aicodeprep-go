@@ -51,7 +51,7 @@ func (ih *InputHandler) GetPrompt() (string, error) {
 
 // GetFilePatterns gets file patterns from user interactively
 func (ih *InputHandler) GetFilePatterns() ([]string, error) {
-	fmt.Print("请输入文件模式 (如: *.go, src/**/*.js, 回车结束):\n> ")
+	fmt.Print("请输入文件模式 (如: *.go, src/**/*.js, 空行结束):\n> ")
 
 	var patterns []string
 	for {
@@ -81,7 +81,7 @@ func (ih *InputHandler) GetFilePatterns() ([]string, error) {
 
 // GetExcludePatterns gets exclude patterns from user interactively
 func (ih *InputHandler) GetExcludePatterns() ([]string, error) {
-	fmt.Print("请输入排除模式 (如: vendor/*, *_test.go, 回车结束):\n> ")
+	fmt.Print("请输入排除模式 (如: vendor/*, *_test.go, 空行结束):\n> ")
 
 	var excludes []string
 	for {
@@ -104,31 +104,6 @@ func (ih *InputHandler) GetExcludePatterns() ([]string, error) {
 	return excludes, nil
 }
 
-// ConfirmFileSelection shows file list and asks for confirmation
-func (ih *InputHandler) ConfirmFileSelection(files []selector.FileInfo) (bool, error) {
-	fmt.Printf("\n找到 %d 个文件:\n", len(files))
-
-	totalSize := int64(0)
-	for i, file := range files {
-		relPath := getDisplayPath(file.Path)
-		fmt.Printf("%d. %s (%s)\n", i+1, relPath, formatBytes(file.Size))
-		totalSize += file.Size
-	}
-
-	fmt.Printf("\n总计: %d 个文件, %s\n", len(files), formatBytes(totalSize))
-	fmt.Print("是否继续? (y/N): ")
-
-	if !ih.scanner.Scan() {
-		if err := ih.scanner.Err(); err != nil {
-			return false, fmt.Errorf("failed to read input: %w", err)
-		}
-		return false, nil
-	}
-
-	answer := strings.ToLower(strings.TrimSpace(ih.scanner.Text()))
-	return answer == "y" || answer == "yes", nil
-}
-
 // SelectFromList allows user to select specific files from a list
 func (ih *InputHandler) SelectFromList(files []selector.FileInfo) ([]selector.FileInfo, error) {
 	if len(files) == 0 {
@@ -141,7 +116,7 @@ func (ih *InputHandler) SelectFromList(files []selector.FileInfo) ([]selector.Fi
 		fmt.Printf("%d. %s (%s)\n", i+1, relPath, formatBytes(file.Size))
 	}
 
-	fmt.Print("\n请选择要包含的文件 (输入编号，用空格分隔，或 'a' 选择全部): ")
+	fmt.Print("\n请选择要包含的文件 (输入编号，用空格分隔，Enter/a/all 以选择全部): ")
 
 	if !ih.scanner.Scan() {
 		if err := ih.scanner.Err(); err != nil {

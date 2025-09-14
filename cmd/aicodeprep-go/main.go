@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -15,15 +14,15 @@ import (
 )
 
 var (
-	files       []string
-	excludes    []string
-	prompt      string
+	files            []string
+	excludes         []string
+	prompt           string
 	interactive_mode bool
-	output      string
-	configPath  string
-	dryRun      bool
-	maxSize     int64
-	verbose     bool
+	output           string
+	configPath       string
+	dryRun           bool
+	maxSize          int64
+	verbose          bool
 )
 
 var rootCmd = &cobra.Command{
@@ -55,6 +54,11 @@ func main() {
 }
 
 func runCommand(cmd *cobra.Command, args []string) error {
+	// If no arguments and no flags, show help
+	if len(os.Args) == 1 {
+		return cmd.Help()
+	}
+
 	// Load configuration
 	cfg := config.DefaultConfig()
 	if configPath != "" {
@@ -140,17 +144,6 @@ func runInteractiveMode(cfg *config.Config) error {
 		return nil
 	}
 
-	// Confirm file selection
-	confirmed, err := ih.ConfirmFileSelection(selectedFiles)
-	if err != nil {
-		return fmt.Errorf("failed to get confirmation: %w", err)
-	}
-
-	if !confirmed {
-		fmt.Fprintf(os.Stderr, "Operation cancelled\n")
-		return nil
-	}
-
 	// Allow user to select specific files
 	finalFiles, err := ih.SelectFromList(selectedFiles)
 	if err != nil {
@@ -224,27 +217,4 @@ func generateOutput(cfg *config.Config, files []selector.FileInfo) error {
 	}
 
 	return nil
-}
-
-// getConfigPath returns the default config path if not specified
-func getConfigPath() string {
-	if configPath != "" {
-		return configPath
-	}
-
-	// Try to find config file in common locations
-	candidates := []string{
-		".aicodeprep.yaml",
-		".aicodeprep.yml",
-		filepath.Join(os.Getenv("HOME"), ".config", "aicodeprep", "config.yaml"),
-		filepath.Join(os.Getenv("HOME"), ".aicodeprep.yaml"),
-	}
-
-	for _, candidate := range candidates {
-		if _, err := os.Stat(candidate); err == nil {
-			return candidate
-		}
-	}
-
-	return ""
 }
