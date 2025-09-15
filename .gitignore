@@ -33,6 +33,6 @@ ehthumbs.db
 Thumbs.db
 
 # Application specific
-/aicodeprep-go
+/aicodeprep-go*
 prompt.txt
 *.log
