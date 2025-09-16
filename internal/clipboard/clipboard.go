@@ -6,6 +6,9 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 // CopyToClipboard copies text to the system clipboard
@@ -15,6 +18,14 @@ func CopyToClipboard(text string) error {
 	switch runtime.GOOS {
 	case "windows":
 		cmd = exec.Command("clip")
+		// Convert UTF-8 to GBK for Windows
+		encoder := simplifiedchinese.GBK.NewEncoder()
+		gbkText, _, err := transform.String(encoder, text)
+		if err != nil {
+			// If conversion fails, use original text
+			gbkText = text
+		}
+		cmd.Stdin = strings.NewReader(gbkText)
 	case "darwin":
 		cmd = exec.Command("pbcopy")
 	case "linux":
@@ -30,7 +41,10 @@ func CopyToClipboard(text string) error {
 		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}
 
-	cmd.Stdin = strings.NewReader(text)
+	// For non-Windows systems, set stdin here
+	if runtime.GOOS != "windows" {
+		cmd.Stdin = strings.NewReader(text)
+	}
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to copy to clipboard: %w", err)
